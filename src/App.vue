@@ -5,38 +5,8 @@
         <QueueChart
             id="1"
             :margin="{top: 0, right: 0, bottom: 0, left: 0}"
-            :width="width * 0.5"
-            :height="height * 0.5"
-        ></QueueChart>
-      </q-card-section>
-    </q-card>
-    <q-card>
-      <q-card-section style="padding: 8px">
-        <QueueChart
-            id="2"
-            :margin="{top: 0, right: 0, bottom: 0, left: 0}"
-            :width="width * 0.5"
-            :height="height * 0.5"
-        ></QueueChart>
-      </q-card-section>
-    </q-card>
-    <q-card>
-      <q-card-section style="padding: 8px">
-        <QueueChart
-            id="3"
-            :margin="{top: 0, right: 0, bottom: 0, left: 0}"
-            :width="width * 0.5"
-            :height="height * 0.5"
-        ></QueueChart>
-      </q-card-section>
-    </q-card>
-    <q-card>
-      <q-card-section style="padding: 8px">
-        <QueueChart
-            id="4"
-            :margin="{top: 0, right: 0, bottom: 0, left: 0}"
-            :width="width * 0.5"
-            :height="height * 0.5"
+            :width="width * 0.97"
+            :height="height * 0.9"
         ></QueueChart>
       </q-card-section>
     </q-card>
@@ -44,8 +14,7 @@
 </template>
 
 <script>
-
-import QueueChart from "@/components/QueueChart";
+import QueueChart from "@/components/QueueChart"
 
 export default {
   name: 'App',
