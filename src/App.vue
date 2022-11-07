@@ -10,6 +10,7 @@
             :arrival-interval="5"
             :passengers-count="10"
             :stations-count="5"
+            :station-passengers-queue-size="1"
         ></QueueChart>
       </q-card-section>
     </q-card>

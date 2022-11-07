@@ -7,7 +7,7 @@
 import * as d3 from 'd3'
 
 const componentName = 'QueueChart'
-const timeScale = 1.0
+const timeScale = 2.0
 const second = 1.0 / timeScale
 const millisecondsInSecond = 1000.0 * second
 const stationsColors = ['#f7cc05', '#eb2d23', '#1c3f91', '#079bd7', '#00883a', '#f0859d', '#ae5e3b']
@@ -35,6 +35,7 @@ export default {
     stationsCount: {type: Number, required: true},
     passengersCount: {type: Number, required: true},
     arrivalInterval: {type: Number, required: true},
+    stationPassengersQueueSize: {type: Number, required: true},
   },
   computed: {
     containerID() {
@@ -58,10 +59,24 @@ export default {
     this.stationsGroup = this.rootGroup.append('g')
     this.passengersGroup = this.rootGroup.append('g')
     this.generateStations(this.stationsGroup, this.stations, this.stationsCount)
-    generatePassengers(this.passengersCount, this.passengers, this.arrivalInterval)
+    this.generatePassengers(this.passengersCount, this.passengers, this.arrivalInterval)
     this.arrivePassenger()
   },
   methods: {
+    generatePassengers(passengersCount, passengers, arrivalInterval) {
+      let arrivalTime = 0
+      for (let i = 0; i < passengersCount; i++) {
+        arrivalTime += generateArrivalInterval(arrivalInterval)
+        const graphicObject = this.passengersGroup.append('rect')
+            .attr('x', -this.passengerGraphicModelSize)
+            .attr('y', (this.innerHeight - this.passengerGraphicModelSize) * 0.5)
+            .attr('width', this.passengerGraphicModelSize)
+            .attr('height', this.passengerGraphicModelSize)
+        passengers.push({number: i, arrivalTime, graphicObject})
+      }
+
+      return passengers
+    },
     generateStations(group, stations, stationsCount) {
       const heightBias = this.innerHeight / (stationsCount + 1)
       const lineWidth = this.passengerGraphicModelSize * 2.0
@@ -90,24 +105,19 @@ export default {
             .attr('height', this.passengerGraphicModelSize)
             .classed('train', true)
 
-        stations.push({number: i, station, train})
+        stations.push({number: i, station, train, passengersQueue: []})
       }
     },
     arrivePassenger() {
-      if (this.arrivalPassengerIndex >= this.passengers.length)
+      if (this.arrivalPassengerIndex >= this.passengers.length) {
         return
+      }
 
       const passenger = this.passengers[this.arrivalPassengerIndex]
-      passenger.graphicObject = this.passengersGroup.append('rect')
-          .attr('x', -this.passengerGraphicModelSize)
-          .attr('y', (this.innerHeight - this.passengerGraphicModelSize) * 0.5)
-          .attr('width', this.passengerGraphicModelSize)
-          .attr('height', this.passengerGraphicModelSize)
-
       const timeout = (passenger.arrivalTime - this.lastArrivalTime - second) * millisecondsInSecond
       this.lastArrivalTime = passenger.arrivalTime
-      this.arrivalPassengerIndex++
       this.generalPassengersQueue.push(this.passengers[this.arrivalPassengerIndex])
+      this.arrivalPassengerIndex++
       setTimeout(() => passenger.graphicObject.transition()
               .duration(this.passengerArrivalAnimationDuration)
               .attr('x', this.getPositionInGeneralQueue())
@@ -119,7 +129,33 @@ export default {
       return (this.innerWidth * 0.5) + ((2 - this.generalPassengersQueue.length) * 1.5 * this.passengerGraphicModelSize)
     },
     onArrivedPassenger() {
+      this.trySelectStation()
       this.arrivePassenger()
+    },
+    trySelectStation() {
+      if (this.generalPassengersQueue.length === 0) {
+        return
+      }
+
+      let freeStation = undefined
+      if (this.stationPassengersQueueSize === 1) {
+        const freeStations = this.stations.filter(x => x.passengersQueue.length === 0)
+        if (freeStations.length > 0) {
+          freeStation = freeStations[Math.floor(Math.random() * freeStations.length)]
+        }
+      }
+
+      if (freeStation === undefined) {
+        return
+      }
+
+      const passenger = this.generalPassengersQueue.shift()
+      freeStation.passengersQueue.push(passenger)
+      passenger.graphicObject.attr('fill', freeStation.station.attr('fill'))
+          .transition()
+          .duration(this.passengerArrivalAnimationDuration * 0.5)
+          .attr('x', freeStation.station.attr('x') - this.passengerGraphicModelSize)
+          .attr('y', freeStation.station.attr('y'))
     },
   }
 }
@@ -131,16 +167,6 @@ function addRootGroup(containerID, width, height, margin) {
       .attr('height', height)
       .append('g')
       .attr('transform', `translate(${margin.left}, ${margin.top})`)
-}
-
-function generatePassengers(passengersCount, passengers, arrivalInterval) {
-  let arrivalTime = 0
-  for (let i = 0; i < passengersCount; i++) {
-    arrivalTime += generateArrivalInterval(arrivalInterval)
-    passengers.push({number: i, arrivalTime: arrivalTime})
-  }
-
-  return passengers
 }
 
 function generateArrivalInterval(arrivalInterval) {
