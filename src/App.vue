@@ -7,6 +7,9 @@
             :margin="{top: 0, right: 0, bottom: 0, left: 0}"
             :width="width * 0.97"
             :height="height * 0.9"
+            :arrival-interval="5"
+            :passengers-count="10"
+            :stations-count="5"
         ></QueueChart>
       </q-card-section>
     </q-card>

@@ -7,8 +7,10 @@
 import * as d3 from 'd3'
 
 const componentName = 'QueueChart'
-const millisecondsInSecond = 1000
-const stationsColors = ['#f7cc05', '#eb2d23', '#1c3f91', '#079bd7', '#00883a', '#f0859d', '#ae5e3b']
+const timeScale = 1.0
+const second = 1.0 / timeScale
+const millisecondsInSecond = 1000.0 * second
+// const stationsColors = ['#f7cc05', '#eb2d23', '#1c3f91', '#079bd7', '#00883a', '#f0859d', '#ae5e3b']
 
 export default {
   name: componentName,
@@ -16,7 +18,8 @@ export default {
     return {
       rootGroup: Selection,
       stations: [],
-      passengers: generatePassengers(10, 5),
+      passengers: [],
+      generalPassengersQueue: [],
       arrivalPassengerIndex: 0,
       lastArrivalTime: 0.0,
       passengerArrivalAnimationDuration: millisecondsInSecond,
@@ -27,6 +30,9 @@ export default {
     margin: {type: Object, required: true},
     width: {type: Number, required: true},
     height: {type: Number, required: true},
+    stationsCount: {type: Number, required: true},
+    passengersCount: {type: Number, required: true},
+    arrivalInterval: {type: Number, required: true},
   },
   computed: {
     containerID() {
@@ -41,10 +47,14 @@ export default {
     innerHeight() {
       return this.height - this.margin.top - this.margin.bottom
     },
+    passengerGraphicModelSize() {
+      return this.innerHeight / ((this.stationsCount + 1.0) * 2.0)
+    },
   },
   mounted() {
     this.rootGroup = addRootGroup(this.containerID, this.width, this.height, this.margin)
-    generateStations(this.rootGroup, this.stations, 5)
+    generateStations(this.rootGroup, this.stations, this.stationsCount)
+    generatePassengers(this.passengersCount, this.passengers, this.arrivalInterval)
     this.arrivePassenger()
   },
   methods: {
@@ -54,22 +64,32 @@ export default {
 
       const passenger = this.passengers[this.arrivalPassengerIndex]
       passenger.graphicObject = this.rootGroup.append('rect')
-          .attr('x', -20)
+          .attr('x', -this.passengerGraphicModelSize)
           .attr('y', this.innerHeight * 0.5)
-          .attr('width', 20)
-          .attr('height', 20)
+          .attr('width', this.passengerGraphicModelSize)
+          .attr('height', this.passengerGraphicModelSize)
 
-      const timeout = (passenger.arrivalTime - this.lastArrivalTime - 1) * millisecondsInSecond
+      const timeout = (passenger.arrivalTime - this.lastArrivalTime - second) * millisecondsInSecond
+      this.lastArrivalTime = passenger.arrivalTime
       this.arrivalPassengerIndex++
+      this.generalPassengersQueue.push(this.passengers[this.arrivalPassengerIndex])
       setTimeout(() => passenger.graphicObject.transition()
               .duration(this.passengerArrivalAnimationDuration)
-              .attr('x', this.innerWidth / (this.passengers.length + 2) * (this.passengers.length - passenger.number))
-              .on('end', this.arrivePassenger),
+              .attr('x', this.getPositionInGeneralQueue())
+              .on('end', this.onArrivedPassenger),
           timeout
       )
     },
+    getPositionInGeneralQueue() {
+      return (this.innerWidth * 0.5) + ((2 - this.generalPassengersQueue.length) * 1.5 * this.passengerGraphicModelSize)
+    },
+    onArrivedPassenger() {
+      this.arrivePassenger()
+    },
   }
 }
+
+
 
 function generateStations(group, stations, stationsCount) {
   for (let i = 0; i < stationsCount; i++) {
@@ -83,9 +103,17 @@ function generateStations(group, stations, stationsCount) {
   }
 }
 
-function generatePassengers(passengersCount, arrivalInterval) {
+function addRootGroup(containerID, width, height, margin) {
+  return d3.select(containerID)
+      .append('svg')
+      .attr('width', width)
+      .attr('height', height)
+      .append('g')
+      .attr('transform', `translate(${margin.left}, ${margin.top})`)
+}
+
+function generatePassengers(passengersCount, passengers, arrivalInterval) {
   let arrivalTime = 0
-  const passengers = []
   for (let i = 0; i < passengersCount; i++) {
     arrivalTime += generateArrivalInterval(arrivalInterval)
     passengers.push({number: i, arrivalTime: arrivalTime})
@@ -95,16 +123,7 @@ function generatePassengers(passengersCount, arrivalInterval) {
 }
 
 function generateArrivalInterval(arrivalInterval) {
-  return Math.floor(1 + (Math.random() * arrivalInterval))
-}
-
-function addRootGroup(containerID, width, height, margin) {
-  return d3.select(containerID)
-      .append('svg')
-      .attr('width', width)
-      .attr('height', height)
-      .append('g')
-      .attr('transform', `translate(${margin.left}, ${margin.top})`)
+  return Math.floor(second + (Math.random() * arrivalInterval))
 }
 </script>
 
