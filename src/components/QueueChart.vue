@@ -7,7 +7,7 @@
 import * as d3 from 'd3'
 
 const componentName = 'QueueChart'
-const timeScale = 1.0
+const timeScale = 10.0
 const second = 1.0 / timeScale
 const millisecondsInSecond = 1000.0 * second
 const stationsColors = ['#f7cc05', '#eb2d23', '#1c3f91', '#079bd7', '#00883a', '#f0859d', '#ae5e3b']
@@ -116,12 +116,14 @@ export default {
       const passenger = this.passengers[this.arrivalPassengerIndex]
       const timeout = (passenger.arrivalTime - this.lastArrivalTime - second) * millisecondsInSecond
       this.lastArrivalTime = passenger.arrivalTime
-      this.generalPassengersQueue.push(this.passengers[this.arrivalPassengerIndex])
-      this.arrivalPassengerIndex++
       setTimeout(() => passenger.graphicObject.transition()
               .duration(millisecondsInSecond)
               .attr('x', this.getPositionInGeneralQueue(this.generalPassengersQueue.length))
-              .on('end', this.onArrivedPassenger),
+              .on('end', () => {
+                this.generalPassengersQueue.push(this.passengers[this.arrivalPassengerIndex])
+                this.arrivalPassengerIndex++
+                this.onArrivedPassenger()
+              }),
           timeout
       )
     },
