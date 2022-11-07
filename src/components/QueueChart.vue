@@ -10,13 +10,15 @@ const componentName = 'QueueChart'
 const timeScale = 1.0
 const second = 1.0 / timeScale
 const millisecondsInSecond = 1000.0 * second
-// const stationsColors = ['#f7cc05', '#eb2d23', '#1c3f91', '#079bd7', '#00883a', '#f0859d', '#ae5e3b']
+const stationsColors = ['#f7cc05', '#eb2d23', '#1c3f91', '#079bd7', '#00883a', '#f0859d', '#ae5e3b']
 
 export default {
   name: componentName,
   data() {
     return {
       rootGroup: Selection,
+      stationsGroup: Selection,
+      passengersGroup: Selection,
       stations: [],
       passengers: [],
       generalPassengersQueue: [],
@@ -53,19 +55,52 @@ export default {
   },
   mounted() {
     this.rootGroup = addRootGroup(this.containerID, this.width, this.height, this.margin)
-    generateStations(this.rootGroup, this.stations, this.stationsCount)
+    this.stationsGroup = this.rootGroup.append('g')
+    this.passengersGroup = this.rootGroup.append('g')
+    this.generateStations(this.stationsGroup, this.stations, this.stationsCount)
     generatePassengers(this.passengersCount, this.passengers, this.arrivalInterval)
     this.arrivePassenger()
   },
   methods: {
+    generateStations(group, stations, stationsCount) {
+      const heightBias = this.innerHeight / (stationsCount + 1)
+      const lineWidth = this.passengerGraphicModelSize * 2.0
+
+      for (let i = 0; i < stationsCount; i++) {
+        group.append('rect')
+            .attr('x', this.innerWidth - lineWidth)
+            .attr('y', (heightBias * (1 + i)) - (this.passengerGraphicModelSize * 0.25))
+            .attr('width', lineWidth + this.passengerGraphicModelSize)
+            .attr('height', this.passengerGraphicModelSize * 0.5)
+            .attr('fill', stationsColors[i % stationsColors.length])
+            .classed('stationLine', true)
+
+        const station = group.append('rect')
+            .attr('x', this.innerWidth - lineWidth)
+            .attr('y', (heightBias * (1 + i)) - (this.passengerGraphicModelSize * 0.5))
+            .attr('width', this.passengerGraphicModelSize * 0.3)
+            .attr('height', this.passengerGraphicModelSize)
+            .attr('fill', stationsColors[i % stationsColors.length])
+            .classed('stationLine', true)
+
+        const train = group.append('rect')
+            .attr('x', this.innerWidth + this.passengerGraphicModelSize)
+            .attr('y', (heightBias * (1 + i)) - (this.passengerGraphicModelSize * 0.5))
+            .attr('width', this.passengerGraphicModelSize)
+            .attr('height', this.passengerGraphicModelSize)
+            .classed('train', true)
+
+        stations.push({number: i, station, train})
+      }
+    },
     arrivePassenger() {
       if (this.arrivalPassengerIndex >= this.passengers.length)
         return
 
       const passenger = this.passengers[this.arrivalPassengerIndex]
-      passenger.graphicObject = this.rootGroup.append('rect')
+      passenger.graphicObject = this.passengersGroup.append('rect')
           .attr('x', -this.passengerGraphicModelSize)
-          .attr('y', this.innerHeight * 0.5)
+          .attr('y', (this.innerHeight - this.passengerGraphicModelSize) * 0.5)
           .attr('width', this.passengerGraphicModelSize)
           .attr('height', this.passengerGraphicModelSize)
 
@@ -86,20 +121,6 @@ export default {
     onArrivedPassenger() {
       this.arrivePassenger()
     },
-  }
-}
-
-
-
-function generateStations(group, stations, stationsCount) {
-  for (let i = 0; i < stationsCount; i++) {
-    const train = group.append('rect')
-        .attr('x', 20)
-        .attr('y', 50 * (i + 1))
-        .attr('width', 20)
-        .attr('height', 20)
-        .classed('train', true)
-    stations.push({number: i, trainGraphic: train})
   }
 }
 
@@ -132,5 +153,10 @@ function generateArrivalInterval(arrivalInterval) {
   stroke-width: 2px;
   stroke: black;
   fill: none;
+}
+
+.stationLine {
+  stroke-width: 0.5px;
+  stroke: black;
 }
 </style>

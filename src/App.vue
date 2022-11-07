@@ -1,12 +1,12 @@
 <template>
   <div class="q-pa-md row q-gutter-md">
     <q-card>
-      <q-card-section style="padding: 8px">
+      <q-card-section style="padding: 0">
         <QueueChart
             id="1"
             :margin="{top: 0, right: 0, bottom: 0, left: 0}"
-            :width="width * 0.97"
-            :height="height * 0.9"
+            :width="width * 0.45"
+            :height="height * 0.45"
             :arrival-interval="5"
             :passengers-count="10"
             :stations-count="5"
