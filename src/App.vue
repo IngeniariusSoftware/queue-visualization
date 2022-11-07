@@ -5,10 +5,11 @@
         <QueueChart
             id="1"
             :margin="{top: 0, right: 0, bottom: 0, left: 0}"
-            :width="width * 0.45"
-            :height="height * 0.45"
-            :arrival-interval="5"
-            :passengers-count="10"
+            :width="width * 0.95"
+            :height="height * 0.95"
+            :arrival-interval="1"
+            :take-interval="10"
+            :passengers-count="100"
             :stations-count="5"
             :station-passengers-queue-size="1"
         ></QueueChart>
