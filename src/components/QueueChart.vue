@@ -24,6 +24,7 @@ export default {
       generalPassengersQueue: [],
       arrivalPassengerIndex: 0,
       lastArrivalTime: 0.0,
+      getPositionInGeneralQueue: undefined,
     }
   },
   props: {
@@ -60,6 +61,7 @@ export default {
     this.passengersGroup = this.rootGroup.append('g')
     this.generatePassengers(this.passengersCount, this.passengers, this.arrivalInterval)
     this.generateStations(this.stationsGroup, this.stations, this.stationsCount)
+    this.getPositionInGeneralQueue = this.isStationHasQueue ? this.getPositionWithoutGeneralQueue : this.getPositionWithGeneralQueue
     this.arrivePassenger()
   },
   methods: {
@@ -130,8 +132,11 @@ export default {
           timeout
       )
     },
-    getPositionInGeneralQueue(number) {
+    getPositionWithGeneralQueue(number) {
       return (this.innerWidth * 0.5) + ((1 - number) * 1.5 * this.passengerGraphicModelSize)
+    },
+    getPositionWithoutGeneralQueue() {
+      return 1.5 * this.passengerGraphicModelSize
     },
     onArrivedPassenger() {
       this.trySelectStation()
@@ -142,23 +147,13 @@ export default {
         return
       }
 
-      let freeStation = undefined
-      if (!this.isStationHasQueue) {
-        const freeStations = this.stations.filter(x => x.passengersQueue.length === 0)
-        if (freeStations.length > 0) {
-          freeStation = freeStations[Math.floor(Math.random() * freeStations.length)]
-        }
-      }
-
+      const freeStation = this.getFreeStation()
       if (freeStation === undefined) {
         return
       }
 
       const passenger = this.generalPassengersQueue.shift()
-      this.generalPassengersQueue.forEach((x, i) => x.graphicObject.transition()
-          .duration(millisecondsInSecond * 0.5)
-          .attr('x', this.getPositionInGeneralQueue(i))
-      )
+      this.orderGeneralQueue()
 
       freeStation.passengersQueue.push(passenger)
       passenger.graphicObject.attr('fill', freeStation.platform.attr('fill'))
@@ -169,6 +164,23 @@ export default {
 
       this.takePassenger(passenger, freeStation)
       this.trySelectStation()
+    },
+    getFreeStation() {
+      let freeStation = undefined
+      if (!this.isStationHasQueue) {
+        const freeStations = this.stations.filter(x => x.passengersQueue.length === 0)
+        if (freeStations.length > 0) {
+          freeStation = freeStations[Math.floor(Math.random() * freeStations.length)]
+        }
+      }
+
+      return freeStation
+    },
+    orderGeneralQueue() {
+      this.generalPassengersQueue.forEach((x, i) => x.graphicObject.transition()
+          .duration(millisecondsInSecond * 0.5)
+          .attr('x', this.getPositionInGeneralQueue(i))
+      )
     },
     takePassenger(passenger, station) {
       const duration = generateInterval(this.takeInterval) * millisecondsInSecond * 0.5
