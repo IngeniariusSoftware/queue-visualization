@@ -7,7 +7,7 @@
 import * as d3 from 'd3'
 
 const componentName = 'QueueChart'
-const timeScale = 10.0
+const timeScale = 1.0
 const second = 1.0 / timeScale
 const millisecondsInSecond = 1000.0 * second
 const stationsColors = ['#f7cc05', '#eb2d23', '#1c3f91', '#079bd7', '#00883a', '#f0859d', '#ae5e3b']
@@ -35,7 +35,7 @@ export default {
     passengersCount: {type: Number, required: true},
     arrivalInterval: {type: Number, required: true},
     takeInterval: {type: Number, required: true},
-    stationPassengersQueueSize: {type: Number, required: true},
+    isStationHasQueue: {type: Boolean, required: true},
   },
   computed: {
     containerID() {
@@ -122,13 +122,16 @@ export default {
               .on('end', () => {
                 this.generalPassengersQueue.push(this.passengers[this.arrivalPassengerIndex])
                 this.arrivalPassengerIndex++
+                passenger.graphicObject.transition()
+                    .duration(millisecondsInSecond * 0.5)
+                    .attr('x', this.getPositionInGeneralQueue(this.generalPassengersQueue.length - 1))
                 this.onArrivedPassenger()
               }),
           timeout
       )
     },
     getPositionInGeneralQueue(number) {
-      return (this.innerWidth * 0.5) + ((2 - number) * 1.5 * this.passengerGraphicModelSize)
+      return (this.innerWidth * 0.5) + ((1 - number) * 1.5 * this.passengerGraphicModelSize)
     },
     onArrivedPassenger() {
       this.trySelectStation()
@@ -140,7 +143,7 @@ export default {
       }
 
       let freeStation = undefined
-      if (this.stationPassengersQueueSize === 1) {
+      if (!this.isStationHasQueue) {
         const freeStations = this.stations.filter(x => x.passengersQueue.length === 0)
         if (freeStations.length > 0) {
           freeStation = freeStations[Math.floor(Math.random() * freeStations.length)]
@@ -154,7 +157,7 @@ export default {
       const passenger = this.generalPassengersQueue.shift()
       this.generalPassengersQueue.forEach((x, i) => x.graphicObject.transition()
           .duration(millisecondsInSecond * 0.5)
-          .attr('x', this.getPositionInGeneralQueue(1 + i))
+          .attr('x', this.getPositionInGeneralQueue(i))
       )
 
       freeStation.passengersQueue.push(passenger)

@@ -9,9 +9,9 @@
             :height="height * 0.95"
             :arrival-interval="1"
             :take-interval="10"
-            :passengers-count="100"
-            :stations-count="5"
-            :station-passengers-queue-size="1"
+            :passengers-count="30"
+            :stations-count="3"
+            :is-station-has-queue="false"
         ></QueueChart>
       </q-card-section>
     </q-card>
