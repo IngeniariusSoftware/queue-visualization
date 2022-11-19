@@ -32,7 +32,8 @@ export default {
     margin: {type: Object, required: true},
     width: {type: Number, required: true},
     height: {type: Number, required: true},
-    stationsCount: {type: Number, required: true},
+    staticStationsCount: {type: Number, required: true},
+    dynamicStationsCount: {type: Number, required: true},
     passengersCount: {type: Number, required: true},
     arrivalInterval: {type: Number, required: true},
     takeInterval: {type: Number, required: true},
@@ -52,7 +53,7 @@ export default {
       return this.height - this.margin.top - this.margin.bottom
     },
     passengerGraphicModelSize() {
-      return this.innerHeight / ((this.stationsCount + 1.0) * 2.0)
+      return this.innerHeight / ((this.staticStationsCount + 1.0) * 2.0)
     },
   },
   mounted() {
@@ -60,7 +61,7 @@ export default {
     this.stationsGroup = this.rootGroup.append('g')
     this.passengersGroup = this.rootGroup.append('g')
     this.generatePassengers(this.passengersCount, this.passengers, this.arrivalInterval)
-    this.generateStations(this.stationsGroup, this.stations, this.stationsCount)
+    this.generateStations(this.stationsGroup, this.stations, this.staticStationsCount)
     this.getPositionInGeneralQueue = this.isStationHasQueue ? this.getPositionWithoutGeneralQueue : this.getPositionWithGeneralQueue
     this.getFreeStation = this.isStationHasQueue ? this.getFreeStationWithoutGeneralQueue : this.getFreeStationWithGeneralQueue
     this.arrivePassenger()

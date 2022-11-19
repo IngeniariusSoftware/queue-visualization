@@ -4,13 +4,14 @@
       <q-card-section style="padding: 0">
         <QueueChart
             id="1"
-            :margin="{top: 0, right: 0, bottom: 0, left: 0}"
+            :margin="margin"
             :width="width * 0.48"
             :height="height * 0.47"
-            :arrival-interval="1"
-            :take-interval="15"
-            :passengers-count="30"
-            :stations-count="5"
+            :arrival-interval="arrivalInterval"
+            :take-interval="takeInterval"
+            :passengers-count="passengersCount"
+            :static-stations-count="staticStationsCount"
+            :dynamic-stations-count="0"
             :is-station-has-queue="false"
         ></QueueChart>
       </q-card-section>
@@ -19,13 +20,14 @@
       <q-card-section style="padding: 0">
         <QueueChart
             id="2"
-            :margin="{top: 0, right: 0, bottom: 0, left: 0}"
+            :margin="margin"
             :width="width * 0.48"
             :height="height * 0.47"
-            :arrival-interval="1"
-            :take-interval="15"
-            :passengers-count="30"
-            :stations-count="5"
+            :arrival-interval="arrivalInterval"
+            :take-interval="takeInterval"
+            :passengers-count="passengersCount"
+            :static-stations-count="staticStationsCount"
+            :dynamic-stations-count="0"
             :is-station-has-queue="true"
         ></QueueChart>
       </q-card-section>
@@ -34,13 +36,14 @@
       <q-card-section style="padding: 0">
         <QueueChart
             id="3"
-            :margin="{top: 0, right: 0, bottom: 0, left: 0}"
+            :margin="margin"
             :width="width * 0.48"
             :height="height * 0.47"
-            :arrival-interval="1"
-            :take-interval="15"
-            :passengers-count="30"
-            :stations-count="5"
+            :arrival-interval="arrivalInterval"
+            :take-interval="takeInterval"
+            :passengers-count="passengersCount"
+            :static-stations-count="staticStationsCount"
+            :dynamic-stations-count="dynamicStationsCount"
             :is-station-has-queue="false"
         ></QueueChart>
       </q-card-section>
@@ -49,13 +52,14 @@
       <q-card-section style="padding: 0">
         <QueueChart
             id="4"
-            :margin="{top: 0, right: 0, bottom: 0, left: 0}"
+            :margin="margin"
             :width="width * 0.48"
             :height="height * 0.47"
-            :arrival-interval="1"
-            :take-interval="15"
-            :passengers-count="30"
-            :stations-count="5"
+            :arrival-interval="arrivalInterval"
+            :take-interval="takeInterval"
+            :passengers-count="passengersCount"
+            :static-stations-count="staticStationsCount"
+            :dynamic-stations-count="dynamicStationsCount"
             :is-station-has-queue="true"
         ></QueueChart>
       </q-card-section>
@@ -74,7 +78,13 @@ export default {
   data() {
     return {
       width: window.innerWidth,
-      height: window.innerHeight
+      height: window.innerHeight,
+      margin: {top: 0, right: 0, bottom: 0, left: 0},
+      staticStationsCount: 4,
+      dynamicStationsCount: 1,
+      passengersCount: 100,
+      arrivalInterval: 1,
+      takeInterval: 10,
     }
   },
 }
