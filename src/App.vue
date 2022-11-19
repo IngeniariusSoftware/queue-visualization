@@ -5,13 +5,58 @@
         <QueueChart
             id="1"
             :margin="{top: 0, right: 0, bottom: 0, left: 0}"
-            :width="width * 0.95"
-            :height="height * 0.95"
+            :width="width * 0.48"
+            :height="height * 0.47"
             :arrival-interval="1"
-            :take-interval="10"
+            :take-interval="15"
             :passengers-count="30"
-            :stations-count="3"
+            :stations-count="5"
             :is-station-has-queue="false"
+        ></QueueChart>
+      </q-card-section>
+    </q-card>
+    <q-card>
+      <q-card-section style="padding: 0">
+        <QueueChart
+            id="2"
+            :margin="{top: 0, right: 0, bottom: 0, left: 0}"
+            :width="width * 0.48"
+            :height="height * 0.47"
+            :arrival-interval="1"
+            :take-interval="15"
+            :passengers-count="30"
+            :stations-count="5"
+            :is-station-has-queue="true"
+        ></QueueChart>
+      </q-card-section>
+    </q-card>
+    <q-card>
+      <q-card-section style="padding: 0">
+        <QueueChart
+            id="3"
+            :margin="{top: 0, right: 0, bottom: 0, left: 0}"
+            :width="width * 0.48"
+            :height="height * 0.47"
+            :arrival-interval="1"
+            :take-interval="15"
+            :passengers-count="30"
+            :stations-count="5"
+            :is-station-has-queue="false"
+        ></QueueChart>
+      </q-card-section>
+    </q-card>
+    <q-card>
+      <q-card-section style="padding: 0">
+        <QueueChart
+            id="4"
+            :margin="{top: 0, right: 0, bottom: 0, left: 0}"
+            :width="width * 0.48"
+            :height="height * 0.47"
+            :arrival-interval="1"
+            :take-interval="15"
+            :passengers-count="30"
+            :stations-count="5"
+            :is-station-has-queue="true"
         ></QueueChart>
       </q-card-section>
     </q-card>
