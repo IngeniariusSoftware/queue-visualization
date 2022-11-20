@@ -19,12 +19,18 @@ export default {
       rootGroup: Selection,
       stationsGroup: Selection,
       passengersGroup: Selection,
+      statisticsGroup: Selection,
       stations: [],
       passengers: [],
       generalPassengersQueue: [],
       arrivalPassengerIndex: 0,
       lastArrivalTime: 0.0,
       getPositionInGeneralQueue: undefined,
+      timerId: 0,
+      statistics: [{label: 'Work time', value: 0.0}, {label: 'Waiting probability', value: 0.0},
+        {label: 'Average waiting time', value: 0.0}, {label: 'Average service time', value: 0.0},
+        {label: 'Server idle probability', value: 0.0}, {label: 'Average time between arrivals', value: 0.0},
+        {label: 'Average waiting time who waited', value: 0.0}]
     }
   },
   props: {
@@ -60,13 +66,31 @@ export default {
     this.rootGroup = addRootGroup(this.containerID, this.width, this.height, this.margin)
     this.stationsGroup = this.rootGroup.append('g')
     this.passengersGroup = this.rootGroup.append('g')
+    this.statisticsGroup = this.rootGroup.append('g')
     this.generatePassengers(this.passengersCount, this.passengers, this.arrivalInterval)
     this.generateStations(this.stationsGroup, this.stations, this.staticStationsCount)
     this.getPositionInGeneralQueue = this.isStationHasQueue ? this.getPositionWithoutGeneralQueue : this.getPositionWithGeneralQueue
     this.getFreeStation = this.isStationHasQueue ? this.getFreeStationWithoutGeneralQueue : this.getFreeStationWithGeneralQueue
+    this.statistics[5].value = this.passengers.map((p, i) => p.arrivalTime - (i > 0 ? this.passengers[i - 1].arrivalTime : 0)).reduce((a, b) => a + b, 0.0)
+    this.statistics[5].value /= this.passengers.length
+    this.addStatistics()
+    this.timerId = setInterval(this.addStatistics, millisecondsInSecond)
     this.arrivePassenger()
   },
   methods: {
+    addStatistics() {
+      this.statistics[0].value += 1.0
+
+
+      const statisticsSelection = this.statisticsGroup.selectAll('text').data(this.statistics)
+      statisticsSelection.enter()
+          .append('text')
+          .attr('x', 10)
+          .attr('y', (_, i) => (i + 1) * 20.0)
+          .merge(statisticsSelection)
+          .text((d) => `${d.label}: ${d.value.toFixed(2)}`)
+      statisticsSelection.exit().remove()
+    },
     generatePassengers(passengersCount, passengers, arrivalInterval) {
       let arrivalTime = 0
       for (let i = 0; i < passengersCount; i++) {
