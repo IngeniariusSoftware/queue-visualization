@@ -11,7 +11,6 @@
             :take-interval="takeInterval"
             :passengers-count="passengersCount"
             :static-stations-count="staticStationsCount"
-            :dynamic-stations-count="0"
             :is-station-has-queue="false"
         ></QueueChart>
       </q-card-section>
@@ -27,7 +26,6 @@
             :take-interval="takeInterval"
             :passengers-count="passengersCount"
             :static-stations-count="staticStationsCount"
-            :dynamic-stations-count="0"
             :is-station-has-queue="true"
         ></QueueChart>
       </q-card-section>
@@ -42,8 +40,7 @@
             :arrival-interval="arrivalInterval"
             :take-interval="takeInterval"
             :passengers-count="passengersCount"
-            :static-stations-count="staticStationsCount"
-            :dynamic-stations-count="dynamicStationsCount"
+            :static-stations-count="staticStationsCount + 1"
             :is-station-has-queue="false"
         ></QueueChart>
       </q-card-section>
@@ -58,8 +55,7 @@
             :arrival-interval="arrivalInterval"
             :take-interval="takeInterval"
             :passengers-count="passengersCount"
-            :static-stations-count="staticStationsCount"
-            :dynamic-stations-count="dynamicStationsCount"
+            :static-stations-count="staticStationsCount + 1"
             :is-station-has-queue="true"
         ></QueueChart>
       </q-card-section>
@@ -81,10 +77,9 @@ export default {
       height: window.innerHeight,
       margin: {top: 0, right: 0, bottom: 0, left: 0},
       staticStationsCount: 4,
-      dynamicStationsCount: 1,
-      passengersCount: 100,
-      arrivalInterval: 1,
-      takeInterval: 10,
+      passengersCount: 200,
+      arrivalInterval: 2,
+      takeInterval: 16,
     }
   },
 }

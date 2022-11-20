@@ -9,8 +9,8 @@ import * as d3 from 'd3'
 const componentName = 'QueueChart'
 const timeScale = 1.0
 const precision = 0.1
-const second = 1.0 / timeScale
-const millisecondsInSecond = 1000.0 * second
+const second = 1.0
+const millisecondsInSecond = 1000.0 / timeScale
 const stationsColors = ['#f7cc05', '#eb2d23', '#1c3f91', '#079bd7', '#00883a', '#f0859d', '#ae5e3b']
 
 export default {
@@ -34,7 +34,7 @@ export default {
       statistics: [{label: 'Work time', value: 0.0}, {label: 'Waiting probability', value: 0.0},
         {label: 'Average waiting time', value: 0.0}, {label: 'Average service time', value: 0.0},
         {label: 'Server idle probability', value: 0.0}, {label: 'Average time between arrivals', value: 0.0},
-        {label: 'Average waiting time who waited', value: 0.0}]
+        {label: 'Average waiting time who waited', value: 0.0}, {label: 'Passengers count', value: 0.0}]
     }
   },
   props: {
@@ -43,7 +43,6 @@ export default {
     width: {type: Number, required: true},
     height: {type: Number, required: true},
     staticStationsCount: {type: Number, required: true},
-    dynamicStationsCount: {type: Number, required: true},
     passengersCount: {type: Number, required: true},
     arrivalInterval: {type: Number, required: true},
     takeInterval: {type: Number, required: true},
@@ -77,24 +76,25 @@ export default {
     this.getFreeStation = this.isStationHasQueue ? this.getFreeStationWithoutGeneralQueue : this.getFreeStationWithGeneralQueue
     this.statistics[5].value = this.passengers.map((p, i) => p.arrivalTime - (i > 0 ? this.passengers[i - 1].arrivalTime : 0)).reduce((a, b) => a + b, 0.0)
     this.statistics[5].value /= this.passengers.length
+    this.time = precision
+    setInterval(() => this.time += precision * second, millisecondsInSecond * precision)
     this.addStatistics()
     this.statisticsTimerId = setInterval(this.addStatistics, millisecondsInSecond)
-    this.time = precision
-    setInterval(() => this.time += precision, millisecondsInSecond * precision)
     this.arrivePassenger()
   },
   methods: {
     addStatistics() {
       const workingTime = this.time
       this.statistics[0].value = workingTime
+      this.statistics[7].value = this.passengersCount - this.arrivalPassengerIndex
       const serviceTime = this.serviceTimes.reduce((a, b) => a + b, 0.0)
       this.statistics[3].value = serviceTime / (this.serviceTimes.length || 1)
-      const filtered = this.waitingTimes.filter((t) => t >= second - precision)
+      const filtered = this.waitingTimes.filter((t) => t > second - precision)
       const waitingTime = filtered.reduce((a, b) => a + b, 0.0)
       this.statistics[6].value = waitingTime / (filtered.length || 1)
       this.statistics[2].value = waitingTime / (this.waitingTimes.length || 1)
       this.statistics[1].value = filtered.length / (this.waitingTimes.length || 1)
-      this.statistics[4].value = 1.0 - Math.min(serviceTime / (workingTime * (this.staticStationsCount + this.dynamicStationsCount) || 1), 1.0)
+      this.statistics[4].value = 1.0 - Math.min(serviceTime / ((workingTime * this.staticStationsCount) || 1), 1.0)
 
       const statisticsSelection = this.statisticsGroup.selectAll('text').data(this.statistics)
       statisticsSelection.enter()
@@ -105,6 +105,7 @@ export default {
           .text((d) => `${d.label}: ${d.value.toFixed(2)}`)
       statisticsSelection.exit().remove()
     },
+
     generatePassengers(passengersCount, passengers, arrivalInterval) {
       let arrivalTime = 0
       for (let i = 0; i < passengersCount; i++) {
@@ -164,6 +165,7 @@ export default {
               .duration(millisecondsInSecond)
               .attr('x', this.getPositionInGeneralQueue(this.generalPassengersQueue.length))
               .on('end', () => {
+                this.time = passenger.arrivalTime
                 this.generalPassengersQueue.push(this.passengers[this.arrivalPassengerIndex])
                 this.arrivalPassengerIndex++
                 passenger.graphicObject.transition()
@@ -265,9 +267,9 @@ export default {
 
     takePassenger(passenger, station) {
       this.waitingTimes.push(this.time - passenger.arrivalTime)
-      const interval = generateInterval(this.takeInterval)
-      this.serviceTimes.push(interval)
-      const duration = interval * millisecondsInSecond * 0.5
+      const serviceTime = generateInterval(this.takeInterval)
+      this.serviceTimes.push(serviceTime)
+      const duration = serviceTime * millisecondsInSecond * 0.5
       station.train.transition()
           .duration(duration)
           .attr('x', station.platform.attr('x') - this.passengerGraphicModelSize)
@@ -303,7 +305,7 @@ function addRootGroup(containerID, width, height, margin) {
 }
 
 function generateInterval(interval) {
-  return Math.floor(second + (Math.random() * interval))
+  return second + Math.floor(Math.random() * interval)
 }
 </script>
 
