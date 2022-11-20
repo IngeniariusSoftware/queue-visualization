@@ -8,6 +8,7 @@ import * as d3 from 'd3'
 
 const componentName = 'QueueChart'
 const timeScale = 1.0
+const precision = 0.1
 const second = 1.0 / timeScale
 const millisecondsInSecond = 1000.0 * second
 const stationsColors = ['#f7cc05', '#eb2d23', '#1c3f91', '#079bd7', '#00883a', '#f0859d', '#ae5e3b']
@@ -26,7 +27,10 @@ export default {
       arrivalPassengerIndex: 0,
       lastArrivalTime: 0.0,
       getPositionInGeneralQueue: undefined,
-      timerId: 0,
+      statisticsTimerId: 0,
+      time: 0.0,
+      serviceTimes: [],
+      waitingTimes: [],
       statistics: [{label: 'Work time', value: 0.0}, {label: 'Waiting probability', value: 0.0},
         {label: 'Average waiting time', value: 0.0}, {label: 'Average service time', value: 0.0},
         {label: 'Server idle probability', value: 0.0}, {label: 'Average time between arrivals', value: 0.0},
@@ -74,13 +78,23 @@ export default {
     this.statistics[5].value = this.passengers.map((p, i) => p.arrivalTime - (i > 0 ? this.passengers[i - 1].arrivalTime : 0)).reduce((a, b) => a + b, 0.0)
     this.statistics[5].value /= this.passengers.length
     this.addStatistics()
-    this.timerId = setInterval(this.addStatistics, millisecondsInSecond)
+    this.statisticsTimerId = setInterval(this.addStatistics, millisecondsInSecond)
+    this.time = precision
+    setInterval(() => this.time += precision, millisecondsInSecond * precision)
     this.arrivePassenger()
   },
   methods: {
     addStatistics() {
-      this.statistics[0].value += 1.0
-
+      const workingTime = this.time
+      this.statistics[0].value = workingTime
+      const serviceTime = this.serviceTimes.reduce((a, b) => a + b, 0.0)
+      this.statistics[3].value = serviceTime / (this.serviceTimes.length || 1)
+      const filtered = this.waitingTimes.filter((t) => t >= second - precision)
+      const waitingTime = filtered.reduce((a, b) => a + b, 0.0)
+      this.statistics[6].value = waitingTime / (filtered.length || 1)
+      this.statistics[2].value = waitingTime / (this.waitingTimes.length || 1)
+      this.statistics[1].value = filtered.length / (this.waitingTimes.length || 1)
+      this.statistics[4].value = 1.0 - Math.min(serviceTime / (workingTime * (this.staticStationsCount + this.dynamicStationsCount) || 1), 1.0)
 
       const statisticsSelection = this.statisticsGroup.selectAll('text').data(this.statistics)
       statisticsSelection.enter()
@@ -179,6 +193,13 @@ export default {
     },
 
     trySelectStation() {
+      if (this.arrivalPassengerIndex >= this.passengers.length) {
+        const busyStations = this.stations.filter(x => x.passengersQueue.length > 0)
+        if (busyStations.length === 0) {
+          clearInterval(this.statisticsTimerId)
+        }
+      }
+
       if (this.generalPassengersQueue.length === 0) {
         return
       }
@@ -238,11 +259,15 @@ export default {
       station.passengersQueue.forEach((x, i) => x.graphicObject.transition()
           .duration(millisecondsInSecond * 0.5)
           .attr('x', this.getPositionInStationQueue(station, i))
+          .attr('y', station.platform.attr('y'))
       )
     },
 
     takePassenger(passenger, station) {
-      const duration = generateInterval(this.takeInterval) * millisecondsInSecond * 0.5
+      this.waitingTimes.push(this.time - passenger.arrivalTime)
+      const interval = generateInterval(this.takeInterval)
+      this.serviceTimes.push(interval)
+      const duration = interval * millisecondsInSecond * 0.5
       station.train.transition()
           .duration(duration)
           .attr('x', station.platform.attr('x') - this.passengerGraphicModelSize)
