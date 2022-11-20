@@ -1,24 +1,18 @@
-# queue-visualization
+### Description
 
-## Project setup
-```
-npm install
-```
+This is a graphical demonstration of examples from [queue theory](https://en.wikipedia.org/wiki/Queueing_theory). The main task was to implement visualization, the calculated statistics are not true due to the use of js timers.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
 
-### Compiles and minifies for production
-```
-npm run build
-```
+### Demonstration
 
-### Lints and fixes files
-```
-npm run lint
-```
+https://ingeniariussoftware.github.io/queue-visualization/
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+
+### Thanks
+
+Special thanks for inspiration: https://dinopoloclub.com/games/mini-metro/
+
+
+### Screenshot
+
+![screenshot](screenshot.png)
