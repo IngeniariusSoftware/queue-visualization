@@ -7,11 +7,11 @@
             :margin="margin"
             :width="width * 0.48"
             :height="height * 0.47"
-            :arrival-interval="arrivalInterval"
-            :take-interval="takeInterval"
-            :passengers-count="passengersCount"
-            :static-stations-count="staticStationsCount"
+            :passengers-count="1000"
+            :stations-count="4"
             :is-station-has-queue="false"
+            :timeline="staticGeneralQueueTimelineCsv"
+            :statistics="statistics.staticGeneralQueue"
         ></QueueChart>
       </q-card-section>
     </q-card>
@@ -22,26 +22,11 @@
             :margin="margin"
             :width="width * 0.48"
             :height="height * 0.47"
-            :arrival-interval="arrivalInterval"
-            :take-interval="takeInterval"
-            :passengers-count="passengersCount"
-            :static-stations-count="staticStationsCount"
+            :passengers-count="1000"
+            :stations-count="4"
             :is-station-has-queue="true"
-        ></QueueChart>
-      </q-card-section>
-    </q-card>
-    <q-card>
-      <q-card-section style="padding: 0">
-        <QueueChart
-            id="3"
-            :margin="margin"
-            :width="width * 0.48"
-            :height="height * 0.47"
-            :arrival-interval="arrivalInterval"
-            :take-interval="takeInterval"
-            :passengers-count="passengersCount"
-            :static-stations-count="staticStationsCount + 1"
-            :is-station-has-queue="false"
+            :timeline="staticShortestQueueTimelineCsv"
+            :statistics="statistics.staticShortestQueue"
         ></QueueChart>
       </q-card-section>
     </q-card>
@@ -52,11 +37,26 @@
             :margin="margin"
             :width="width * 0.48"
             :height="height * 0.47"
-            :arrival-interval="arrivalInterval"
-            :take-interval="takeInterval"
-            :passengers-count="passengersCount"
-            :static-stations-count="staticStationsCount + 1"
+            :passengers-count="1000"
+            :stations-count="5"
+            :is-station-has-queue="false"
+            :timeline="dynamicGeneralQueueTimelineCsv"
+            :statistics="statistics.dynamicGeneralQueue"
+        ></QueueChart>
+      </q-card-section>
+    </q-card>
+    <q-card>
+      <q-card-section style="padding: 0">
+        <QueueChart
+            id="3"
+            :margin="margin"
+            :width="width * 0.48"
+            :height="height * 0.47"
+            :passengers-count="1000"
+            :stations-count="5"
             :is-station-has-queue="true"
+            :timeline="dynamicShortestQueueTimelineCsv"
+            :statistics="statistics.dynamicShortestQueue"
         ></QueueChart>
       </q-card-section>
     </q-card>
@@ -65,6 +65,11 @@
 
 <script>
 import QueueChart from "@/components/QueueChart"
+import {statistics} from "@/data/statistics"
+import staticGeneralQueueTimelineCsv from '@/data/staticGeneralQueue.csv'
+import staticShortestQueueTimelineCsv from '@/data/staticShortestQueue.csv'
+import dynamicGeneralQueueTimelineCsv from '@/data/dynamicGeneralQueue.csv'
+import dynamicShortestQueueTimelineCsv from '@/data/dynamicShortestQueue.csv'
 
 export default {
   name: 'App',
@@ -80,6 +85,11 @@ export default {
       passengersCount: 200,
       arrivalInterval: 2,
       takeInterval: 16,
+      statistics,
+      staticGeneralQueueTimelineCsv,
+      staticShortestQueueTimelineCsv,
+      dynamicGeneralQueueTimelineCsv,
+      dynamicShortestQueueTimelineCsv,
     }
   },
 }
