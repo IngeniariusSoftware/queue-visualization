@@ -8,13 +8,17 @@ public class Program
 
     public static void Main()
     {
-        const int testsCount = 2;
+        System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
+        customCulture.NumberFormat.NumberDecimalSeparator = ".";
+        Thread.CurrentThread.CurrentCulture = customCulture;
+
+        const int testsCount = 1;
         const int staticServersCount = 4;
         const int tasksCount = 100_000;
         const double meanTasksInterval = 60.0;
         const double standardDeviationTasksInterval = 15.0;
-        const double meanWorkDuration = 220.0;
-        const double standardDeviationWorkDuration = 60.0;
+        const double meanWorkDuration = 160.0;
+        const double standardDeviationWorkDuration = 10.0;
         var settings = new[] { (0, false), (0, true), (1, false), (1, true) };
         var statistics = new List<QueueStatistics>();
 
@@ -38,7 +42,8 @@ public class Program
             }
         }
 
-        statistics.ForEach(s => Console.WriteLine(s / testsCount));
+        //statistics.ForEach(s => Console.WriteLine(s / testsCount));
+        statistics.ForEach(s => Console.WriteLine((s / testsCount).ValuesForTable()));
 
         //simulation = new QueueSimulation(tasksCount, tasksIntervalMin, tasksIntervalMax, 4, 1, workDurationMin, workDurationMax, false);
         //File.WriteAllLines("3.txt", simulation.Statistics.WorkingServersByTime.Select(x => $"{x.Key}, {x.Value}"));
