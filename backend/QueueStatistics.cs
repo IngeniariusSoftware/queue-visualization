@@ -22,9 +22,9 @@ public class QueueStatistics
 
     public double TasksAverageWaitingDurationForWaited { get; private set; }
 
-    public double ServersIdleProbability { get; private set; }
+    public double[] IdleProbabilityByServers;
 
-    public double AverageQueueSize { get; private set; }
+    public double[] AverageQueueSizeByServers;
 
     public double[] DurationByWorkingServers;
 
@@ -44,14 +44,14 @@ public class QueueStatistics
         TasksAverageWaitingDurationForWaited = waitedTasks.Count > 0 ? waitedTasks.Average(t => t.WaitingDuration) : 0.0;
         AverageDurationBetweenTasks =
             tasks.Select((t, i) => t.ArrivalTime - (i > 0 ? tasks[i - 1].ArrivalTime : 0.0)).Average();
-        ServersIdleProbability = 1.0 - servers.Average(s => s.AllWorksDuration) / SimulationTime;
+        IdleProbabilityByServers = servers.Select(s => 1 - (s.AllWorksDuration / SimulationTime)).ToArray();
         ServersAverageWorkDuration = servers.Sum(s => s.AllWorksDuration) / TasksCount;
-        AverageQueueSize = GetAverageQueueSize(waitedTasks);
+        AverageQueueSizeByServers = GetAverageQueueSizeByServers(waitedTasks);
         WorkingServersByTime = new SortedDictionary<double, int>();
         DurationByWorkingServers = GetDurationByWorkingServers(tasks, servers.Count);
     }
 
-    private static double GetAverageQueueSize(IReadOnlyCollection<ServerTask> waitedTasks)
+    private static double[] GetAverageQueueSizeByServers(IReadOnlyCollection<ServerTask> waitedTasks)
     {
         List<double> arrivalTimes = waitedTasks.Select(t => t.ArrivalTime).ToList();
         List<double> endWaitingTimes = waitedTasks.Select(t => t.ArrivalTime + t.WaitingDuration).ToList();
@@ -63,7 +63,6 @@ public class QueueStatistics
         int waitedCount = 0;
         double lastTime = 0.0;
         double totalWaitedDuration = 0.0;
-        double timelineDuration = 0.0;
 
         while (endWaitingIndex < endWaitingTimes.Count)
         {
@@ -73,7 +72,6 @@ public class QueueStatistics
                 {
                     double duration = arrivalTimes[arrivalIndex] - lastTime;
                     totalWaitedDuration += waitedCount * duration;
-                    timelineDuration += duration;
                 }
 
                 lastTime = arrivalTimes[arrivalIndex];
@@ -84,7 +82,6 @@ public class QueueStatistics
             {
                 double duration = endWaitingTimes[endWaitingIndex] - lastTime;
                 totalWaitedDuration += waitedCount * duration;
-                timelineDuration += duration;
 
                 lastTime = endWaitingTimes[endWaitingIndex];
                 endWaitingIndex++;
@@ -94,7 +91,7 @@ public class QueueStatistics
 
         if (waitedCount != 0) throw new IndexOutOfRangeException(nameof(waitedCount));
 
-        return totalWaitedDuration / timelineDuration;
+        return new[] { totalWaitedDuration / endWaitingTimes.Last() };
     }
 
     private double[] GetDurationByWorkingServers(IReadOnlyCollection<ServerTask> tasks, int serversCount)
@@ -145,6 +142,16 @@ public class QueueStatistics
         return durationByWorkingServers;
     }
 
+    public string ValuesForTable()
+    {
+        return $"{TasksWaitingProbability:f4}\n" +
+               $"{nameof(TasksAverageWaitingDuration)}: {TasksAverageWaitingDuration:f4}\n" +
+               $"{nameof(TasksAverageWaitingDurationForWaited)}: {TasksAverageWaitingDurationForWaited:f4}\n" +
+               $"{nameof(IdleProbabilityByServers)}: {string.Concat(IdleProbabilityByServers.Select((time, i) => $"{i}: {time:f4}; "))}\n" +
+               $"{nameof(AverageQueueSizeByServers)}: {string.Concat(AverageQueueSizeByServers.Select((time, i) => $"{i}: {time:f4}; "))}\n" +
+               $"{nameof(DurationByWorkingServers)}: {string.Concat(DurationByWorkingServers.Select((time, count) => $"{count}: {time:f4}; "))}\n";
+    }
+
     public override string ToString()
     {
         return
@@ -157,9 +164,9 @@ public class QueueStatistics
             $"{nameof(TasksAverageWaitingDuration)}: {TasksAverageWaitingDuration:f4}\n" +
             $"{nameof(TasksAverageWaitingDurationForWaited)}: {TasksAverageWaitingDurationForWaited:f4}\n" +
             $"{nameof(AverageDurationBetweenTasks)}: {AverageDurationBetweenTasks:f4}\n" +
-            $"{nameof(ServersIdleProbability)}: {ServersIdleProbability:f4}\n" +
             $"{nameof(ServersAverageWorkDuration)}: {ServersAverageWorkDuration:f4}\n" +
-            $"{nameof(AverageQueueSize)}: {AverageQueueSize:f4}\n" +
+            $"{nameof(IdleProbabilityByServers)}: {string.Concat(IdleProbabilityByServers.Select((time, i) => $"{i}: {time:f4}; "))}\n" +
+            $"{nameof(AverageQueueSizeByServers)}: {string.Concat(AverageQueueSizeByServers.Select((time, i) => $"{i}: {time:f4}; "))}\n" +
             $"{nameof(DurationByWorkingServers)}: {string.Concat(DurationByWorkingServers.Select((time, count) => $"{count}: {time:f4}; "))}\n";
     }
 
@@ -169,8 +176,9 @@ public class QueueStatistics
         s1.TasksWaitingProbability += s2.TasksWaitingProbability;
         s1.TasksAverageWaitingDuration += s2.TasksAverageWaitingDuration;
         s1.TasksAverageWaitingDurationForWaited += s2.TasksAverageWaitingDurationForWaited;
-        s1.ServersIdleProbability += s2.ServersIdleProbability;
-        s1.AverageQueueSize += s2.AverageQueueSize;
+        s1.IdleProbabilityByServers.Select((_, i) => s1.IdleProbabilityByServers[i] += s2.IdleProbabilityByServers[i]).ToList();
+        s1.AverageQueueSizeByServers.Select((_, i) => s1.AverageQueueSizeByServers[i] += s2.AverageQueueSizeByServers[i]).ToList();
+        s1.DurationByWorkingServers.Select((_, i) => s1.DurationByWorkingServers[i] += s2.DurationByWorkingServers[i]).ToList();
         return s1;
     }
 
@@ -180,8 +188,9 @@ public class QueueStatistics
         s1.TasksWaitingProbability /= n;
         s1.TasksAverageWaitingDuration /= n;
         s1.TasksAverageWaitingDurationForWaited /= n;
-        s1.ServersIdleProbability /= n;
-        s1.AverageQueueSize /= n;
+        s1.IdleProbabilityByServers.Select((_, i) => s1.IdleProbabilityByServers[i] /= n).ToList();
+        s1.AverageQueueSizeByServers.Select((_, i) => s1.AverageQueueSizeByServers[i] /= n).ToList();
+        s1.DurationByWorkingServers.Select((_, i) => s1.DurationByWorkingServers[i] /= n).ToList();
         return s1;
     }
 }
