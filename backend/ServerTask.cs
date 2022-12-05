@@ -10,9 +10,9 @@ public class ServerTask
 
     public double WaitingDuration { get; private set; }
 
-    public Server? ServedByServer { get; private set; }
+    public Server? ServedBy { get; private set; }
 
-    public bool IsServed => ServedByServer is not null;
+    public bool IsServed => ServedBy is not null;
 
     public ServerTask(int id, double arrivalTime, double workDuration)
     {
@@ -26,12 +26,12 @@ public class ServerTask
     public void StartWork(double startTime, Server servedByServer)
     {
         WaitingDuration = startTime - ArrivalTime;
-        ServedByServer = servedByServer;
+        ServedBy = servedByServer;
     }
 
     public void Reset()
     {
         WaitingDuration = 0.0;
-        ServedByServer = null;
+        ServedBy = null;
     }
 }

@@ -79,7 +79,7 @@ public class QueueSimulation
         {
             if (task.IsServed)
             {
-                task.ServedByServer!.EndWork(_simulationTime);
+                task.ServedBy!.EndWork(_simulationTime);
             }
             else
             {
@@ -101,7 +101,6 @@ public class QueueSimulation
         }
     }
 
-    // TODO ToList
     private List<Server> GetAvailableServers()
     {
         bool isAllStaticServersWork = _staticServers.TrueForAll(s => s.IsWork);
@@ -114,6 +113,6 @@ public class QueueSimulation
         if (availableServers.Count == 0) return availableServers;
 
         int minTasksCount = availableServers.Min(s => s.TasksCount);
-        return availableServers.FindAll(s => s.TasksCount == minTasksCount);
+        return availableServers.FindAll(s => s.TasksCount == minTasksCount).ToList();
     }
 }
