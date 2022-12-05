@@ -8,38 +8,38 @@ public class Program
 
     public static void Main()
     {
-        int testsCount = 1;
-        int staticServersCount = 4;
-        int tasksCount = 100_000;
-        double meanTasksInterval = 60.0;
-        double standardDeviationTasksInterval = 15.0;
-        double meanWorkDuration = 220.0;
-        double standardDeviationWorkDuration = 60.0;
-
-        var tasks = GenerateTasks(tasksCount, meanTasksInterval, standardDeviationTasksInterval, meanWorkDuration,
-            standardDeviationWorkDuration);
-
-        var simulation = new QueueSimulation(tasks, staticServersCount, 0, false);
-        var statistics1 = simulation.Statistics;
-
-
-        simulation = new QueueSimulation(tasks, staticServersCount, 0, true);
-        var statistics2 = simulation.Statistics;
+        const int testsCount = 2;
+        const int staticServersCount = 4;
+        const int tasksCount = 100_000;
+        const double meanTasksInterval = 60.0;
+        const double standardDeviationTasksInterval = 15.0;
+        const double meanWorkDuration = 220.0;
+        const double standardDeviationWorkDuration = 60.0;
+        var settings = new[] { (0, false), (0, true), (1, false), (1, true) };
+        var statistics = new List<QueueStatistics>();
 
         for (int i = 0; i < testsCount; i++)
         {
-            tasks = GenerateTasks(tasksCount, meanTasksInterval, standardDeviationTasksInterval, meanWorkDuration,
+            List<ServerTask> tasks = GenerateTasks(tasksCount, meanTasksInterval, standardDeviationTasksInterval, meanWorkDuration,
                 standardDeviationWorkDuration);
 
-            simulation = new QueueSimulation(tasks, staticServersCount, 0, false);
-            statistics1 += simulation.Statistics;
-
-            simulation = new QueueSimulation(tasks, staticServersCount, 0, true);
-            statistics2 += simulation.Statistics;
+            for (int j = 0; j < settings.Length; j++)
+            {
+                (int dynamicServersCount, bool isHasQueue) = settings[j];
+                var simulation = new QueueSimulation(tasks, staticServersCount, dynamicServersCount, isHasQueue);
+                if (statistics.Count == j)
+                {
+                    statistics.Add(simulation.Statistics);
+                }
+                else
+                {
+                    statistics[j] += simulation.Statistics;
+                }
+            }
         }
 
-        Console.WriteLine(statistics1 / (testsCount + 1));
-        Console.WriteLine(statistics2 / (testsCount + 1));
+        statistics.ForEach(s => Console.WriteLine(s / testsCount));
+
         //simulation = new QueueSimulation(tasksCount, tasksIntervalMin, tasksIntervalMax, 4, 1, workDurationMin, workDurationMax, false);
         //File.WriteAllLines("3.txt", simulation.Statistics.WorkingServersByTime.Select(x => $"{x.Key}, {x.Value}"));
         //Console.WriteLine(simulation.Statistics);
