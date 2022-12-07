@@ -10,7 +10,7 @@ public class QueueSimulation
 
     private readonly List<Server> _staticServers;
 
-    private readonly List<Server> _dynamicServers;
+    public readonly List<Server> DynamicServers;
 
     private readonly Queue<ServerTask> _tasksGeneralQueue;
 
@@ -29,10 +29,10 @@ public class QueueSimulation
         });
 
         _staticServers = GenerateServers(0, staticServersCount, isHasQueue);
-        _dynamicServers = GenerateServers(_staticServers.Count, dynamicServersCount, isHasQueue);
+        DynamicServers = GenerateServers(_staticServers.Count, dynamicServersCount, isHasQueue);
         Simulate();
         Statistics = new QueueStatistics(tasks, staticServersCount, dynamicServersCount,
-            _staticServers.Concat(_dynamicServers).ToList(), Timeline);
+            _staticServers.Concat(DynamicServers).ToList(), Timeline);
     }
 
     private void AddToTimeline(ServerTask task)
@@ -107,7 +107,7 @@ public class QueueSimulation
         List<Server> availableServers = _staticServers.FindAll(s => s.IsAvailable);
         if (isAllStaticServersWork)
         {
-            availableServers.AddRange(_dynamicServers.FindAll(s => s.IsAvailable));
+            availableServers.AddRange(DynamicServers.FindAll(s => s.IsAvailable));
         }
 
         if (availableServers.Count == 0) return availableServers;

@@ -11,15 +11,17 @@ public class Program
         System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
         customCulture.NumberFormat.NumberDecimalSeparator = ".";
         Thread.CurrentThread.CurrentCulture = customCulture;
-
+        
         const int testsCount = 1;
         const int staticServersCount = 4;
-        const int tasksCount = 100_000;
+        const int tasksCount = 300;
         const double meanTasksInterval = 60.0;
         const double standardDeviationTasksInterval = 15.0;
-        const double meanWorkDuration = 160.0;
-        const double standardDeviationWorkDuration = 10.0;
-        var settings = new[] { (0, false), (0, true), (1, false), (1, true) };
+        const double meanWorkDuration = 220.0;
+        const double standardDeviationWorkDuration = 60.0;
+        var settings = new[] { (0, false), (0, true) };
+
+        //var settings = new[] { (0, false), (0, true), (1, false), (1, true) };
         var statistics = new List<QueueStatistics>();
 
         for (int i = 0; i < testsCount; i++)
@@ -31,6 +33,11 @@ public class Program
             {
                 (int dynamicServersCount, bool isHasQueue) = settings[j];
                 var simulation = new QueueSimulation(tasks, staticServersCount, dynamicServersCount, isHasQueue);
+                //File.WriteAllLines($"{j}.csv",
+                //    tasks.FindAll(t => simulation.DynamicServers.Contains(t.ServedBy))
+                //        .Select(t =>
+                //            $"{t.ArrivalTime + t.WaitingDuration - 1},0\n{t.ArrivalTime + t.WaitingDuration},1\n{t.LeaveTime},1\n{t.LeaveTime + 1},0"));
+
                 if (statistics.Count == j)
                 {
                     statistics.Add(simulation.Statistics);
